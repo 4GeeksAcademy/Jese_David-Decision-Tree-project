@@ -4,29 +4,31 @@ from joblib import load
 import os
 import glob
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # .../src
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+# =========================
+# Paths
+# =========================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))      # .../src
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))   # raíz del repo
 
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")        # ✅ src/templates
+MODELS_DIR = os.path.join(ROOT_DIR, "models")              # ✅ models en la raíz
+
+# =========================
+# Flask app
+# =========================
 app = Flask(__name__, template_folder=TEMPLATES_DIR)
 
+# Debug (útil en Render)
 print("BASE_DIR:", BASE_DIR)
+print("ROOT_DIR:", ROOT_DIR)
 print("TEMPLATES_DIR:", TEMPLATES_DIR)
-print("Existe templates?:", os.path.exists(TEMPLATES_DIR))
-print("Contenido templates:", os.listdir(TEMPLATES_DIR) if os.path.exists(TEMPLATES_DIR) else "NO EXISTE")
+print("Existe index.html?:", os.path.exists(os.path.join(TEMPLATES_DIR, "index.html")))
+print("MODELS_DIR:", MODELS_DIR)
+print("Archivos en models/:", os.listdir(MODELS_DIR) if os.path.exists(MODELS_DIR) else "NO EXISTE")
 
-TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
-app = Flask(__name__, template_folder=TEMPLATES_DIR)
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # .../src
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))  # raíz del repo
-
-MODELS_DIR = os.path.join(ROOT_DIR, "models")
-TEMPLATES_DIR = os.path.join(ROOT_DIR, "templates")
-
-app = Flask(__name__, template_folder=TEMPLATES_DIR)
-
-# 1) Buscar modelos (rutas absolutas)
+# =========================
+# Load model
+# =========================
 MODEL_CANDIDATES = (
     glob.glob(os.path.join(MODELS_DIR, "*.joblib")) +
     glob.glob(os.path.join(MODELS_DIR, "*.pkl")) +
@@ -36,17 +38,16 @@ MODEL_CANDIDATES = (
 if not MODEL_CANDIDATES:
     raise FileNotFoundError(f"No encontré modelos en: {MODELS_DIR}")
 
-# 2) Priorizar el optimizado (si existe)
+# Prioriza el optimizado si existe
 opt_models = [p for p in MODEL_CANDIDATES if "opt" in os.path.basename(p).lower()]
 MODEL_PATH = opt_models[0] if opt_models else MODEL_CANDIDATES[0]
 
-print("ROOT_DIR:", ROOT_DIR)
-print("MODELS_DIR:", MODELS_DIR)
 print("Usando modelo:", MODEL_PATH)
-print("Archivos en models/:", os.listdir(MODELS_DIR))
-
 model = load(MODEL_PATH)
 
+# =========================
+# Features
+# =========================
 DEFAULT_FEATURES = [
     "Pregnancies", "Glucose", "BloodPressure", "SkinThickness",
     "Insulin", "BMI", "DiabetesPedigreeFunction", "Age"
@@ -63,6 +64,9 @@ def get_features(m):
 
 FEATURES = get_features(model)
 
+# =========================
+# Routes
+# =========================
 @app.get("/")
 def home():
     return render_template("index.html", features=FEATURES, result=None)
@@ -85,8 +89,11 @@ def predict():
     if hasattr(model, "predict_proba"):
         proba = float(model.predict_proba(X).max())
 
-    return render_template("index.html", features=FEATURES,
-                           result={"pred": pred, "proba": proba, "inputs": data})
+    return render_template(
+        "index.html",
+        features=FEATURES,
+        result={"pred": pred, "proba": proba, "inputs": data}
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -4,6 +4,10 @@ from joblib import load
 import os
 import glob
 
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+app = Flask(__name__, template_folder=TEMPLATES_DIR)
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))   # .../src
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))  # raíz del repo
 

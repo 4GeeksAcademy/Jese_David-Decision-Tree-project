@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Decision Tree - Predictor</title>
+  <style>
+    body{font-family:Arial; max-width:850px; margin:40px auto;}
+    input{padding:8px; margin:6px 0; width:100%;}
+    button{padding:10px 14px; cursor:pointer;}
+    .box{border:1px solid #ddd; padding:16px; border-radius:10px; margin-top:16px;}
+  </style>
+</head>
+<body>
+  <h1>Predicción (Árbol de Decisión)</h1>
+
+  <form method="POST" action="/predict">
+    {% for f in features %}
+      <label>{{ f }}</label>
+      <input name="{{ f }}" placeholder="Ingresa {{ f }}" required>
+    {% endfor %}
+    <button type="submit">Predecir</button>
+  </form>
+
+  {% if result %}
+    <div class="box">
+      <h2>Resultado</h2>
+      <p><b>Predicción:</b> {{ result.pred }}</p>
+      {% if result.proba is not none %}
+        <p><b>Confianza (max proba):</b> {{ "%.3f"|format(result.proba) }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</body>
+</html>

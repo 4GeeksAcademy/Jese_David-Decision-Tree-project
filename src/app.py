@@ -4,6 +4,16 @@ from joblib import load
 import os
 import glob
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # .../src
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
+app = Flask(__name__, template_folder=TEMPLATES_DIR)
+
+print("BASE_DIR:", BASE_DIR)
+print("TEMPLATES_DIR:", TEMPLATES_DIR)
+print("Existe templates?:", os.path.exists(TEMPLATES_DIR))
+print("Contenido templates:", os.listdir(TEMPLATES_DIR) if os.path.exists(TEMPLATES_DIR) else "NO EXISTE")
+
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 app = Flask(__name__, template_folder=TEMPLATES_DIR)
 
